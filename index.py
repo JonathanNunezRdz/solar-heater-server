@@ -173,11 +173,13 @@ def toggle_motor():
 
 @app.route('/motor_on')
 def motor_on():
-    global CHANNEL_RELAY_MASTER
+    global CHANNEL_RELAY_MASTER, motor_status
+
     pin_on(CHANNEL_RELAY_MASTER)
+    motor_status = 1
 
     data = {
-        'motor_status': 1,
+        'motor_status': motor_status,
     }
 
     response = config_response(data)
@@ -187,10 +189,12 @@ def motor_on():
 @app.route('/motor_off')
 def motor_off():
     global CHANNEL_RELAY_MASTER
+
     pin_off(CHANNEL_RELAY_MASTER)
+    motor_status = 0
 
     data = {
-        'motor_status': 0,
+        'motor_status': motor_status,
     }
 
     response = config_response(data)
