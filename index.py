@@ -157,7 +157,15 @@ def mpu():
 
 @app.route('/toggle_motor')
 def toggle_motor():
-    global CHANNEL_RELAY_MASTER
+    global CHANNEL_RELAY_MASTER, motor_status
+
+    if motor_status == 1:
+        data = {
+            'message': "Can't toggle motor when in use."
+        }
+        response = config_response(data, 409)
+        return response
+
     duration = request.args.get('duration')
     toggle_on_off(CHANNEL_RELAY_MASTER, float(duration))
 
@@ -188,7 +196,7 @@ def motor_on():
 
 @app.route('/motor_off')
 def motor_off():
-    global CHANNEL_RELAY_MASTER
+    global CHANNEL_RELAY_MASTER, motor_status
 
     pin_off(CHANNEL_RELAY_MASTER)
     motor_status = 0
