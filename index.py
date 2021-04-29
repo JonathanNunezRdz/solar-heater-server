@@ -76,22 +76,20 @@ def pin_off(pin:int):
     return None
 
 def set_motor_up():
-    global channel_relay_master, channel_relay_negative, channel_relay_positive
+    global CHANNEL_RELAY_MASTER, CHANNEL_RELAY_MOTOR
     # turn off master relay
-    pin_off(channel_relay_master)
+    pin_off(CHANNEL_RELAY_MASTER)
     # set both positive and negative channels off
-    pin_off(channel_relay_negative)
-    pin_off(channel_relay_positive)
+    pin_off(CHANNEL_RELAY_MOTOR)
 
     return None
 
 def set_motor_down():
-    global channel_relay_master, channel_relay_negative, channel_relay_positive
+    global CHANNEL_RELAY_MASTER, CHANNEL_RELAY_MOTOR
     # turn off master relay
-    pin_off(channel_relay_master)
+    pin_off(CHANNEL_RELAY_MASTER)
     # set both positive and negative channels off
-    pin_on(channel_relay_negative)
-    pin_on(channel_relay_positive)
+    pin_on(CHANNEL_RELAY_MOTOR)
 
     return None
 
@@ -104,8 +102,8 @@ def toggle_on_off(pin:int, duration:float):
 
     return None
 
-def config_response(data):
-    response = make_response(jsonify(data), 200)
+def config_response(data, status=200):
+    response = make_response(jsonify(data), status)
     response.headers['Access-Control-Allow-Origin'] = '*'
     response.headers['Content-Type'] = 'application/json'
 
@@ -113,19 +111,21 @@ def config_response(data):
 
 @app.route('/')
 def index():
-    global channel_relay_positive, channel_relay_negative, channel_relay_master
+    global CHANNEL_RELAY_MOTOR, CHANNEL_RELAY_MASTER, current_direction, motor_status
 
     # Now wake the 6050 up as it starts in sleep mode
     bus.write_byte_data(address, power_mgmt_1, 0)
 
     # Setup GPIO to use channel 17, 27, 22 as OUT
-    channel_relay_negative = 17
-    channel_relay_positive = 27
-    channel_relay_master = 22
+    CHANNEL_RELAY_MOTOR = 22
+    CHANNEL_RELAY_MASTER = 27
 
-    channel_list = [channel_relay_negative, channel_relay_positive, channel_relay_master]
+    channel_list = [CHANNEL_RELAY_MOTOR, CHANNEL_RELAY_MASTER]
 
     gpio_setup(channel_list)
+
+    current_direction = 1
+    motor_status = 0
 
     data = {
         'status': 1,
@@ -157,9 +157,9 @@ def mpu():
 
 @app.route('/toggle_motor')
 def toggle_motor():
-    global channel_relay_master
+    global CHANNEL_RELAY_MASTER
     duration = request.args.get('duration')
-    toggle_on_off(channel_relay_master, float(duration))
+    toggle_on_off(CHANNEL_RELAY_MASTER, float(duration))
 
     data = {
         'status': 1,
@@ -171,43 +171,76 @@ def toggle_motor():
     return response
 
 
-@app.route('/pin_on')
-def turn_pin_on():
-    global channel_relay_master
-    pin_on(channel_relay_master)
+@app.route('/motor_on')
+def motor_on():
+    global CHANNEL_RELAY_MASTER
+    pin_on(CHANNEL_RELAY_MASTER)
 
     data = {
-        'status': 1,
+        'motor_status': 1,
     }
 
-    response = make_response(jsonify(data), 200)
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Content-Type'] = 'application/json'
+    response = config_response(data)
 
     return response
 
-@app.route('/pin_off')
-def turn_pin_off():
-    global channel_relay_master
-    pin_off(channel_relay_master)
+@app.route('/motor_off')
+def motor_off():
+    global CHANNEL_RELAY_MASTER
+    pin_off(CHANNEL_RELAY_MASTER)
 
     data = {
-        'status': 0,
+        'motor_status': 0,
     }
 
-    response = make_response(jsonify(data), 200)
-    response.headers['Access-Control-Allow-Origin'] = '*'
-    response.headers['Content-Type'] = 'application/json'
+    response = config_response(data)
 
     return response
 
 @app.route('/current_direction')
-def current_direction():
-    return None
+def get_current_direction():
+    global current_direction
+
+    data = {
+        'current_direction': current_direction
+    }
+
+    response = config_response(data)
+
+    return response
+
+@app.route('/change_direction')
+def change_direction():
+    global current_direction, CHANNEL_RELAY_MOTOR, motor_status
+
+    if motor_status == 1:
+        data = {
+            'message': "Can't change direction when motor is on"
+        }
+        response = config_response(data, 409)
+        return response
+
+    if current_direction == 1: 
+        pin_on(CHANNEL_RELAY_MOTOR)
+        current_direction = 0
+    else: 
+        pin_off(CHANNEL_RELAY_MOTOR)
+        current_direction = 1
+
+    data = {
+        'current_direction': current_direction
+    }
+
+    response = config_response(data)
+
+    return response
+
+    
 
 if __name__ == "__main__":
     print("running from main")
     signal.signal(signal.SIGINT, on_exit)
 else:
+    print('running from flask')
     signal.signal(signal.SIGINT, on_exit)
     
