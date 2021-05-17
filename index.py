@@ -138,17 +138,34 @@ def index():
 
 @app.route('/mpu')
 def mpu():
-    accel_xout = read_word_2c(0x3b)
-    accel_yout = read_word_2c(0x3d)
-    accel_zout = read_word_2c(0x3f)
+    avg_xout = 0
+    avg_yout = 0
+    avg_zout = 0
+
+    for i in range(10):
+        accel_xout = read_word_2c(0x3b)
+        accel_yout = read_word_2c(0x3d)
+        accel_zout = read_word_2c(0x3f)
+        
+        accel_xout_scaled = accel_xout / 16384.0
+        accel_yout_scaled = accel_yout / 16384.0
+        accel_zout_scaled = accel_zout / 16384.0
+
+        avg_xout += accel_xout_scaled
+        avg_yout += accel_yout_scaled
+        avg_zout += accel_zout_scaled
+
+    avg_xout = avg_xout / 10.0
+    avg_yout = avg_yout / 10.0
+    avg_zout = avg_zout / 10.0
     
-    accel_xout_scaled = accel_xout / 16384.0
-    accel_yout_scaled = accel_yout / 16384.0
-    accel_zout_scaled = accel_zout / 16384.0
 
     data = {
-        'x_rotation' : get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled),
-        'y_rotation' : get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
+        # 'x_rotation' : get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled),
+        # 'y_rotation' : get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
+        'x_rotation' : get_x_rotation(avg_xout, avg_yout, avg_zout),
+        'y_rotation' : get_y_rotation(avg_xout, avg_yout, avg_zout)
+        
     }
 
     response = config_response(data)
