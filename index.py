@@ -62,43 +62,46 @@ def on_exit(sig, frame):
 def gpio_setup(channels:list):
     GPIO.setmode(GPIO.BCM)
     for channel in channels:
-        GPIO.setup(channel, GPIO.OUT, initial=1)
+        GPIO.setup(channel, GPIO.OUT, initial=0)
     return None
 
 def pin_on(pin:int):
-    GPIO.output(pin, 0)
+    GPIO.output(pin, 1)
     print('pin {} on'.format(pin))
     return None
 
 def pin_off(pin:int):
-    GPIO.output(pin, 1)
+    GPIO.output(pin, 0)
     print('pin {} off'.format(pin))
     return None
 
 def set_motor_up():
-    global CHANNEL_RELAY_MASTER, CHANNEL_RELAY_MOTOR
-    # turn off master relay
-    pin_off(CHANNEL_RELAY_MASTER)
-    # set both positive and negative channels off
-    pin_off(CHANNEL_RELAY_MOTOR)
+    global CHANNEL_MOTOR_IN_A, CHANNEL_MOTOR_ENABLE, CHANNEL_MOTOR_IN_B
+    # set l294d enable to LOW 
+    pin_off(CHANNEL_MOTOR_ENABLE)
+    # set input A to HIGH and input B to LOW
+    pin_on(CHANNEL_MOTOR_IN_A)
+    pin_off(CHANNEL_MOTOR_IN_B)
 
     return None
 
 def set_motor_down():
-    global CHANNEL_RELAY_MASTER, CHANNEL_RELAY_MOTOR
-    # turn off master relay
-    pin_off(CHANNEL_RELAY_MASTER)
-    # set both positive and negative channels off
-    pin_on(CHANNEL_RELAY_MOTOR)
+    global CHANNEL_MOTOR_IN_A, CHANNEL_MOTOR_ENABLE, CHANNEL_MOTOR_IN_B
+    # set l294d enable to LOW 
+    pin_off(CHANNEL_MOTOR_ENABLE)
+    # set input A to LOW and input B to HIGH
+    pin_off(CHANNEL_MOTOR_IN_A)
+    pin_on(CHANNEL_MOTOR_IN_B)
 
     return None
 
-def toggle_on_off(pin:int, duration:float):
-    pin_on(pin)
+def toggle_on_off(duration:float):
+    global CHANNEL_MOTOR_ENABLE
+    pin_on(CHANNEL_MOTOR_ENABLE)
     # t = Timer(duration, pin_off, [pin])
     # t.start()
     sleep(duration)
-    pin_off(pin)
+    pin_off(CHANNEL_MOTOR_ENABLE)
 
     return None
 
@@ -111,16 +114,17 @@ def config_response(data, status=200):
 
 @app.route('/')
 def index():
-    global CHANNEL_RELAY_MOTOR, CHANNEL_RELAY_MASTER, current_direction, motor_status
+    global CHANNEL_MOTOR_ENABLE, CHANNEL_MOTOR_IN_A, CHANNEL_MOTOR_IN_B ,current_direction, motor_status
 
     # Now wake the 6050 up as it starts in sleep mode
     bus.write_byte_data(address, power_mgmt_1, 0)
 
-    # Setup GPIO to use channel 17, 27, 22 as OUT
-    CHANNEL_RELAY_MOTOR = 22
-    CHANNEL_RELAY_MASTER = 27
+    # Setup GPIO to use channel 23, 24, 25 as OUT
+    CHANNEL_MOTOR_ENABLE = 25
+    CHANNEL_MOTOR_IN_A = 24
+    CHANNEL_MOTOR_IN_B = 23
 
-    channel_list = [CHANNEL_RELAY_MOTOR, CHANNEL_RELAY_MASTER]
+    channel_list = [CHANNEL_MOTOR_ENABLE, CHANNEL_MOTOR_IN_A, CHANNEL_MOTOR_IN_B]
 
     gpio_setup(channel_list)
 
@@ -174,7 +178,7 @@ def mpu():
 
 @app.route('/toggle_motor')
 def toggle_motor():
-    global CHANNEL_RELAY_MASTER, motor_status
+    global motor_status
 
     if motor_status == 1:
         data = {
@@ -184,7 +188,7 @@ def toggle_motor():
         return response
 
     duration = request.args.get('duration')
-    toggle_on_off(CHANNEL_RELAY_MASTER, float(duration))
+    toggle_on_off(float(duration))
 
     data = {
         'status': 1,
@@ -198,9 +202,9 @@ def toggle_motor():
 
 @app.route('/motor_on')
 def motor_on():
-    global CHANNEL_RELAY_MASTER, motor_status
+    global CHANNEL_MOTOR_ENABLE, motor_status
 
-    pin_on(CHANNEL_RELAY_MASTER)
+    pin_on(CHANNEL_MOTOR_ENABLE)
     motor_status = 1
 
     data = {
@@ -213,9 +217,9 @@ def motor_on():
 
 @app.route('/motor_off')
 def motor_off():
-    global CHANNEL_RELAY_MASTER, motor_status
+    global CHANNEL_MOTOR_ENABLE, motor_status
 
-    pin_off(CHANNEL_RELAY_MASTER)
+    pin_off(CHANNEL_MOTOR_ENABLE)
     motor_status = 0
 
     data = {
@@ -240,7 +244,7 @@ def get_current_direction():
 
 @app.route('/change_direction')
 def change_direction():
-    global current_direction, CHANNEL_RELAY_MOTOR, motor_status
+    global current_direction, motor_status
 
     if motor_status == 1:
         data = {
@@ -250,10 +254,10 @@ def change_direction():
         return response
 
     if current_direction == 1: 
-        pin_on(CHANNEL_RELAY_MOTOR)
+        set_motor_down()
         current_direction = 0
     else: 
-        pin_off(CHANNEL_RELAY_MOTOR)
+        set_motor_up()
         current_direction = 1
 
     data = {
