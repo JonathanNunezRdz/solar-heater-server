@@ -62,16 +62,16 @@ def on_exit(sig, frame):
 def gpio_setup(channels:list):
     GPIO.setmode(GPIO.BCM)
     for channel in channels:
-        GPIO.setup(channel, GPIO.OUT, initial=0)
+        GPIO.setup(channel, GPIO.OUT, initial=1)
     return None
 
-def pin_on(pin:int):
-    GPIO.output(pin, 1)
+def pin_on(pin:int, status:int=1):
+    GPIO.output(pin, status)
     print('pin {} on'.format(pin))
     return None
 
-def pin_off(pin:int):
-    GPIO.output(pin, 0)
+def pin_off(pin:int, status:int=0):
+    GPIO.output(pin, status)
     print('pin {} off'.format(pin))
     return None
 
@@ -232,7 +232,7 @@ def toggle_motor():
 def motor_on():
     global CHANNEL_MOTOR_ENABLE, motor_status
 
-    pin_on(CHANNEL_MOTOR_ENABLE)
+    pin_on(CHANNEL_MOTOR_ENABLE, 0)
     motor_status = 1
 
     data = {
@@ -247,7 +247,7 @@ def motor_on():
 def motor_off():
     global CHANNEL_MOTOR_ENABLE, motor_status
 
-    pin_off(CHANNEL_MOTOR_ENABLE)
+    pin_off(CHANNEL_MOTOR_ENABLE, 1)
     motor_status = 0
 
     data = {
