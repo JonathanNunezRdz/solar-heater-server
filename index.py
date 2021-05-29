@@ -95,13 +95,15 @@ def set_motor_down():
 
     return None
 
-def toggle_on_off(duration:float):
+def toggle_on_off(duration:float, inverse:bool=False):
     global CHANNEL_MOTOR_ENABLE
-    pin_on(CHANNEL_MOTOR_ENABLE)
+    if (inverse): pin_on(CHANNEL_MOTOR_ENABLE, 0)
+    else: pin_on(CHANNEL_MOTOR_ENABLE)
     # t = Timer(duration, pin_off, [pin])
     # t.start()
     sleep(duration)
-    pin_off(CHANNEL_MOTOR_ENABLE)
+    if (inverse): pin_off(CHANNEL_MOTOR_ENABLE, 1)
+    else: pin_off(CHANNEL_MOTOR_ENABLE)
 
     return None
 
@@ -216,7 +218,7 @@ def toggle_motor():
         return response
 
     duration = request.args.get('duration')
-    toggle_on_off(float(duration))
+    toggle_on_off(float(duration), True)
 
     data = {
         'status': 1,
