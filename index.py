@@ -149,8 +149,8 @@ def index():
     # Now wake the 6050 up as it starts in sleep mode
     bus.write_byte_data(address, power_mgmt_1, 0)
 
-    # Setup GPIO to use channel 24 as OUT
-    CHANNEL_MOTOR_ENABLE = 24
+    # Setup GPIO to use channel 25 as OUT
+    CHANNEL_MOTOR_ENABLE = 25
 
     channel_list = [CHANNEL_MOTOR_ENABLE]
 
