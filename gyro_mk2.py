@@ -31,19 +31,47 @@ def key_capture_thread():
 def acceleration_loop():
     print('accel range', sensor.read_accel_range())
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
+    average_list = []
     while keep_going:
         sleep(0.1)
-        print(sensor.get_accel_data())
+        data = sensor.get_accel_data()
+        average_list.append(data)
+        print(data)
     print('\n')
+    avg_x = 0
+    avg_y = 0
+    avg_z = 0
+    for data in average_list:
+        avg_x += data['x']
+        avg_y += data['y']
+        avg_z += data['z']
+    avg_x = avg_x / len(average_list)
+    avg_y = avg_y / len(average_list)
+    avg_z = avg_z / len(average_list)
+    print({'x': avg_x, 'y': avg_y, 'z': avg_z})
     return None
 
 def gyroscope_loop():
     print('gyro range', sensor.read_gyro_range())
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
+    average_list = []
     while keep_going:
         sleep(0.1)
-        print(sensor.get_gyro_data())
+        data = sensor.get_gyro_data()
+        average_list.append(data)
+        print(data)
     print('\n')
+    avg_x = 0
+    avg_y = 0
+    avg_z = 0
+    for data in average_list:
+        avg_x += data['x']
+        avg_y += data['y']
+        avg_z += data['z']
+    avg_x = avg_x / len(average_list)
+    avg_y = avg_y / len(average_list)
+    avg_z = avg_z / len(average_list)
+    print({'x': avg_x, 'y': avg_y, 'z': avg_z})
     return None
 
 def set_acceleration(range='2'):
