@@ -30,31 +30,63 @@ def key_capture_thread():
 def acceleration_loop():
     global keep_going
     print('accel range', sensor.read_accel_range())
+    # th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
+    # avg_list =[]
+    # while keep_going:
+    #     sleep(0.1)
+    #     data = sensor.get_accel_data()
+    #     avg_list.append(data)
+    #     print(data)
+    # print('\n')
+    # avg_x = 0
+    # avg_y = 0
+    # avg_z = 0
+    # for data in avg_list:
+    #     avg_x += data['x']
+    #     avg_y += data['y']
+    #     avg_z += data['z']
+    # avg_x = avg_x / len(avg_list)
+    # avg_y = avg_y / len(avg_list)
+    # avg_z = avg_z / len(avg_list)
+
+    # get 200 samples to calibrate acceleration
+    avg_list = [sensor.get_accel_data() for _ in range(200)]
+    avg_x = 0.0
+    avg_y = 0.0
+    avg_z = 0.0
+    for data in avg_list:
+        avg_x += round(data['x'], 2)
+        avg_y += round(data['y'], 2)
+        avg_z += round(data['z'], 2)
+    avg_x = round((avg_x / 200), 2)
+    avg_y = round((avg_y / 200), 2)
+    avg_z = round((avg_z / 200), 2)
+    
+    print('calibrated', {'x': avg_x, 'y': avg_y, 'z': avg_z})
+
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
-    average_list = []
+    avg_list_calibrated = []
     while keep_going:
         sleep(0.1)
         data = sensor.get_accel_data()
-        average_list.append(data)
-        print(data)
-    print('\n')
-    avg_x = 0
-    avg_y = 0
-    avg_z = 0
-    for data in average_list:
-        avg_x += data['x']
-        avg_y += data['y']
-        avg_z += data['z']
-    avg_x = avg_x / len(average_list)
-    avg_y = avg_y / len(average_list)
-    avg_z = avg_z / len(average_list)
-    print({'x': avg_x, 'y': avg_y, 'z': avg_z})
+        data_calibrated = {
+            'x': round(data['x'], 2) + avg_x,
+            'y': round(data['y'], 2) + avg_y,
+            'z': round(data['z'], 2) + avg_z
+        }
+        avg_list_calibrated.append(data_calibrated)
+        print(data_calibrated)
+
     return None
 
 def gyroscope_loop():
     global keep_going
     print('gyro range', sensor.read_gyro_range())
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
+
+    # get 200 samples to calibrate
+    # for i in range(200):
+    #     data = sensor.get_
     average_list = []
     while keep_going:
         sleep(0.1)
