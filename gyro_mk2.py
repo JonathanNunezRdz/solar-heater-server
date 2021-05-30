@@ -22,13 +22,13 @@ gyro_range = {
     '2000': sensor.GYRO_RANGE_2000DEG,
 }
 
-keep_going = True
 def key_capture_thread():
     global keep_going
     input()
     keep_going = False
 
 def acceleration_loop():
+    global keep_going
     print('accel range', sensor.read_accel_range())
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
     average_list = []
@@ -52,6 +52,7 @@ def acceleration_loop():
     return None
 
 def gyroscope_loop():
+    global keep_going
     print('gyro range', sensor.read_gyro_range())
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
     average_list = []
@@ -81,6 +82,7 @@ def set_gyroscope(range='250'):
     sensor.set_gyro_range(gyro_range[range])
 
 def main():
+    global keep_going
     loop = True
     while(loop):
         keep_going = True
