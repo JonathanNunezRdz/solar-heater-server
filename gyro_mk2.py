@@ -3,8 +3,10 @@ from mpu6050 import mpu6050
 import csv
 
 sensor = mpu6050(0x68)
-# sensor.set_gyro_range(sensor.GYRO_RANGE_500DEG)
-print('accel range', sensor.read_accel_range())
+sensor.set_gyro_range(sensor.GYRO_RANGE_2000DEG)
+# sensor.set_accel_range(sensor.ACCEL_RANGE_16G)
+# print('accel range', sensor.read_accel_range())
+print('gyro_range', sensor.read_gyro_range())
 # start_time = time()
 
 
