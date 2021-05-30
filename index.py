@@ -308,7 +308,7 @@ def get_averages():
         response = config_response(data, 409)
         return response
     
-    pin_on(CHANNEL_MOTOR_ENABLE)
+    pin_on(CHANNEL_MOTOR_ENABLE, 0)
     motor_status = 1
 
     start_time = time()
@@ -320,7 +320,7 @@ def get_averages():
         averages.append(mpu_average())
         lapsed_time = time() - start_time
 
-    pin_off(CHANNEL_MOTOR_ENABLE)
+    pin_off(CHANNEL_MOTOR_ENABLE, 1)
     motor_status = 0
 
     data = {
