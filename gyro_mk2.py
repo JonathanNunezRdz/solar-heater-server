@@ -70,9 +70,9 @@ def acceleration_loop():
         sleep(0.1)
         data = sensor.get_accel_data()
         data_calibrated = {
-            'x': round(data['x'], 2) + avg_x,
-            'y': round(data['y'], 2) + avg_y,
-            'z': round(data['z'], 2) + avg_z
+            'x': round(data['x'] + avg_x, 2),
+            'y': round(data['y'] + avg_y, 2),
+            'z': round(data['z'] + avg_z, 2)
         }
         avg_list_calibrated.append(data_calibrated)
         print(data_calibrated)
