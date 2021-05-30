@@ -49,8 +49,8 @@ def acceleration_loop():
     # avg_y = avg_y / len(avg_list)
     # avg_z = avg_z / len(avg_list)
 
-    # get 200 samples to calibrate acceleration
-    avg_list = [sensor.get_accel_data() for _ in range(200)]
+    # get 500 samples to calibrate acceleration
+    avg_list = [sensor.get_accel_data() for _ in range(500)]
     avg_x = 0.0
     avg_y = 0.0
     avg_z = 0.0
