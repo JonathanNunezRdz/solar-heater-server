@@ -30,7 +30,10 @@ def get_gyroscope():
     return sensor.get_gyro_data()
 
 def set_acceleration(range='2'):
-    sensor.set_accel_range(range)
+    sensor.set_accel_range(accel_range[range])
+
+def set_gyroscope(range='250'):
+    sensor.set_gyro_range(gyro_range[range])
 
 def main():
     loop = True
@@ -59,7 +62,7 @@ def main():
                 print('Option 1000 - 1000DEG')
                 print('Option 2000 - 2000DEG')
                 option = input()
-                if option in ['250', '500', '1000', '2000']: set_acceleration(option)
+                if option in ['250', '500', '1000', '2000']: set_gyroscope(option)
                 else: exit(2)
         print('Do you want to continue - (y/n)')
         option = input()
