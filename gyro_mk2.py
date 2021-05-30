@@ -1,5 +1,6 @@
 from time import sleep, time
 from mpu6050 import mpu6050
+import threading as th
 import csv
 
 sensor = mpu6050(0x68)
@@ -21,15 +22,27 @@ gyro_range = {
     '2000': sensor.GYRO_RANGE_2000DEG,
 }
 
-def get_acceleration():
-    print('accel range', sensor.read_accel_range())
-    for i in range(10): print(sensor.get_accel_data())
-    return '\n'
+keep_going = True
+def key_capture_thread():
+    global keep_going
+    input()
+    keep_going = False
 
-def get_gyroscope():
+def acceleration_loop():
+    print('accel range', sensor.read_accel_range())
+    th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
+    while keep_going:
+        print(sensor.get_accel_data())
+    print('\n')
+    return None
+
+def gyroscope_loop():
     print('gyro range', sensor.read_gyro_range())
-    for i in range(10): print(sensor.get_gyro_data())
-    return '\n'
+    th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
+    while keep_going:
+        print(sensor.get_gyro_data())
+    print('\n')
+    return None
 
 def set_acceleration(range='2'):
     sensor.set_accel_range(accel_range[range])
@@ -40,12 +53,13 @@ def set_gyroscope(range='250'):
 def main():
     loop = True
     while(loop):
+        keep_going = True
         print('Option A - acceleration')
         print('Option B - gyroscope')
         print('Optino C - set ranges')
         option = input()
-        if option == 'A': print(get_acceleration())
-        elif option == 'B': print(get_gyroscope())
+        if option == 'A': acceleration_loop()
+        elif option == 'B': gyroscope_loop()
         elif option == 'C':
             print('Option A - set acceleration range')
             print('Option B - set gyroscope range')
