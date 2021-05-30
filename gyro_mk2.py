@@ -23,11 +23,13 @@ gyro_range = {
 
 def get_acceleration():
     print('accel range', sensor.read_accel_range())
-    return [sensor.get_accel_data() for i in range(10)]
+    for i in range(10): print(sensor.get_accel_data())
+    return '\n'
 
 def get_gyroscope():
     print('gyro range', sensor.read_gyro_range())
-    return [sensor.get_gyro_data() for i in range(10)]
+    for i in range(10): print(sensor.get_gyro_data())
+    return '\n'
 
 def set_acceleration(range='2'):
     sensor.set_accel_range(accel_range[range])
