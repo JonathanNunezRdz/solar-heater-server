@@ -32,6 +32,7 @@ def acceleration_loop():
     print('accel range', sensor.read_accel_range())
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
     while keep_going:
+        sleep(0.1)
         print(sensor.get_accel_data())
     print('\n')
     return None
@@ -40,6 +41,7 @@ def gyroscope_loop():
     print('gyro range', sensor.read_gyro_range())
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
     while keep_going:
+        sleep(0.1)
         print(sensor.get_gyro_data())
     print('\n')
     return None
