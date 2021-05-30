@@ -65,6 +65,10 @@ def main():
         option = input()
         if (option == 'n'): loop = False
 
+if __name__ == '__main__':
+    main()
+
+
 # with open('module_data.csv', mode='w') as csv_file:
 #     fieldnames = ['time_lapsed', 'accel_x', 'accel_y', 'accel_z', 'gyro_x', 'gyro_y', 'gyro_z']
 #     writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
