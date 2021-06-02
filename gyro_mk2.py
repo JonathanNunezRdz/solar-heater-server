@@ -52,12 +52,30 @@ def acceleration_calibration():
                 except: continue
             ax_offsets[direc_ii] = np.array(mpu_array)[:, cal_index[qq]]
         
-        popts, = curve_fit(accel_fit,np.append(np.append(ax_offsets[0],
-                                 ax_offsets[1]),ax_offsets[2]),
-                   np.append(np.append(1.0*np.ones(np.shape(ax_offsets[0])),
-                    -1.0*np.ones(np.shape(ax_offsets[1]))),
-                        0.0*np.ones(np.shape(ax_offsets[2]))),
-                            maxfev=10000)
+        popts,_ = curve_fit(
+                    accel_fit,
+                    np.append(
+                        np.append(
+                            ax_offsets[0],
+                            ax_offsets[1]
+                        ),
+                        ax_offsets[2]
+                    ),
+                    np.append(
+                        np.append(
+                            1.0*np.ones(
+                                np.shape(ax_offsets[0])
+                            ),
+                            -1.0*np.ones(
+                                np.shape(ax_offsets[1])
+                            )
+                        ),
+                        0.0*np.ones(
+                            np.shape(ax_offsets[2])
+                        )
+                    ),
+                    maxfev=10000
+                )
         
         mpu_offsets[cal_index[qq]] = popts
     print('Accelerometer Calibration')
