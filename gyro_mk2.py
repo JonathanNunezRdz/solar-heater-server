@@ -50,32 +50,32 @@ def acceleration_loop():
     # avg_z = avg_z / len(avg_list)
 
     # get 500 samples to calibrate acceleration
-    avg_list = [sensor.get_accel_data() for _ in range(500)]
-    avg_x = 0.0
-    avg_y = 0.0
-    avg_z = 0.0
-    for data in avg_list:
-        avg_x += round(data['x'], 2)
-        avg_y += round(data['y'], 2)
-        avg_z += round(data['z'], 2)
-    avg_x = round((avg_x / 200), 2)
-    avg_y = round((avg_y / 200), 2)
-    avg_z = round((avg_z / 200), 2)
+    # avg_list = [sensor.get_accel_data() for _ in range(500)]
+    # avg_x = 0.0
+    # avg_y = 0.0
+    # avg_z = 0.0
+    # for data in avg_list:
+    #     avg_x += round(data['x'], 2)
+    #     avg_y += round(data['y'], 2)
+    #     avg_z += round(data['z'], 2)
+    # avg_x = round((avg_x / 200), 2)
+    # avg_y = round((avg_y / 200), 2)
+    # avg_z = round((avg_z / 200), 2)
     
-    print('calibrated', {'x': avg_x, 'y': avg_y, 'z': avg_z})
+    # print('calibrated', {'x': avg_x, 'y': avg_y, 'z': avg_z})
 
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
     avg_list_calibrated = []
     while keep_going:
         sleep(0.1)
         data = sensor.get_accel_data()
-        data_calibrated = {
-            'x': round(data['x'] - avg_x, 2),
-            'y': round(data['y'] - avg_y, 2),
-            'z': round(data['z'] - avg_z, 2)
-        }
-        avg_list_calibrated.append(data_calibrated)
-        print(data_calibrated)
+        # data_calibrated = {
+        #     'x': round(data['x'] - avg_x, 2),
+        #     'y': round(data['y'] - avg_y, 2),
+        #     'z': round(data['z'] - avg_z, 2)
+        # }
+        # avg_list_calibrated.append(data_calibrated)
+        print(data)
 
     return None
 
