@@ -116,7 +116,9 @@ def main():
         print('Optino C - set range')
         option = input()
         if option == 'A': acceleration_loop()
-        elif option == 'B': acceleration_calibration()
+        elif option == 'B': 
+            accel_cal = acceleration_calibration()
+            print(accel_cal)
         elif option == 'C':
             print('Option A - set acceleration range')
             option = input()
