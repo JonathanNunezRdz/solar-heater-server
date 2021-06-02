@@ -40,7 +40,8 @@ def acceleration_calibration():
         ax_offsets = [[], [], []]
         print('-'*50)
         for direc_ii,direc in enumerate(cal_directions):
-            input('-'*8, 'Press Enter and keep MPU steady to calibrate the accelerometer with the -', ax_qq, 'axis pointed', direc)
+            print('-'*8, 'Press Enter and keep MPU steady to calibrate the accelerometer with the -', ax_qq, 'axis pointed', direc)
+            input()
             [sensor.get_accel_data(True) for ii in range(CAL_SIZE)]
             mpu_array = []
             while len(mpu_array) < CAL_SIZE:
