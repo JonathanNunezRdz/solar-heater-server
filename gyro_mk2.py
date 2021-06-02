@@ -69,6 +69,9 @@ def acceleration_loop():
     while keep_going:
         sleep(0.1)
         data = sensor.get_accel_data(True)
+        data['x'] = round(data['x'], 2)
+        data['y'] = round(data['y'], 2)
+        data['z'] = round(data['z'], 2)
         # data_calibrated = {
         #     'x': round(data['x'] - avg_x, 2),
         #     'y': round(data['y'] - avg_y, 2),

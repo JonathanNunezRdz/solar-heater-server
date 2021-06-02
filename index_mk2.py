@@ -174,10 +174,10 @@ def config_response(data, status=200):
 
 def main():
     bus.write_byte_data(MPU_ADDRESS, POWER_MGMT_1, 0)
-    print(bus.read_byte_data(MPU_ADDRESS, ACCEL_CONFIG))
-    # while(True):
-    #     sleep(0.1)
-    #     print(get_acceleration())
+    # print(bus.read_byte_data(MPU_ADDRESS, ACCEL_CONFIG))
+    while(True):
+        sleep(0.1)
+        print(get_acceleration())
 
 @app.route('/')
 def index():
