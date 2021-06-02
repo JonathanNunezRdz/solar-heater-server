@@ -3,7 +3,7 @@ from mpu6050 import mpu6050
 import threading as th
 import csv
 import numpy as np
-from scipy.optimze import curve_fit
+from scipy.optimize import curve_fit
 
 sensor = mpu6050(0x68)
 # sensor.set_gyro_range(sensor.GYRO_RANGE_2000DEG)
