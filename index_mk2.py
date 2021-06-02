@@ -1,4 +1,8 @@
 #!/usr/bin/python
+"""
+    TO-DO: 
+        - change acceleration range
+"""
 
 import RPi.GPIO as GPIO
 import smbus
@@ -12,18 +16,27 @@ from time import sleep, time
 app = Flask(__name__)
 
 # Power management registers
-power_mgmt_1 = 0x6b
-power_mgmt_2 = 0x6c
+POWER_MGMT_1 = 0x6b
+POWER_MGMT_2 = 0x6c
+
+# Accel config MPU_ADDRESS
+ACCEL_CONFIG = 0x1C
+
+# Acceleration ranges
+ACCEL_RANGE_2G = 0x00
+ACCEL_RANGE_4G = 0x08
+ACCEL_RANGE_8G = 0x10
+ACCEL_RANGE_16G = 0x18
 
 bus = smbus.SMBus(1) # or bus = smbus.SMBus(1) for revision 2 boards
-address = 0x68 # This is the address value read via the i2cdetect command
+MPU_ADDRESS = 0x68 # This is the MPU_ADDRESS value read via the i2cdetect command
 
 def read_byte(adr):
-    return bus.read_byte_data(address, adr)
+    return bus.read_byte_data(MPU_ADDRESS, adr)
 
 def read_word(adr):
-    high = bus.read_byte_data(address, adr)
-    low = bus.read_byte_data(address, adr+1)
+    high = bus.read_byte_data(MPU_ADDRESS, adr)
+    low = bus.read_byte_data(MPU_ADDRESS, adr+1)
     val = (high << 8) + low
     return val
 
@@ -160,17 +173,18 @@ def config_response(data, status=200):
     return response
 
 def main():
-    bus.write_byte_data(address, power_mgmt_1, 0)
-    while(True):
-        sleep(0.1)
-        print(get_acceleration())
+    bus.write_byte_data(MPU_ADDRESS, POWER_MGMT_1, 0)
+    print(bus.read_byte_data(MPU_ADDRESS, ACCEL_CONFIG))
+    # while(True):
+    #     sleep(0.1)
+    #     print(get_acceleration())
 
 @app.route('/')
 def index():
     global CHANNEL_MOTOR_ENABLE, current_direction, motor_status
 
     # Now wake the 6050 up as it starts in sleep mode
-    bus.write_byte_data(address, power_mgmt_1, 0)
+    bus.write_byte_data(MPU_ADDRESS, POWER_MGMT_1, 0)
 
     # Setup GPIO to use channel 25 as OUT
     CHANNEL_MOTOR_ENABLE = 25
