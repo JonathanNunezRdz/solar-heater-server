@@ -120,6 +120,7 @@ def set_acceleration(range='2'):
 
 def main():
     global keep_going, accel_cal
+    accel_cal = None
     loop = True
     while(loop):
         keep_going = True
