@@ -1,4 +1,5 @@
 from time import sleep, time
+from os import path
 from mpu6050 import mpu6050
 import threading as th
 import csv
@@ -25,6 +26,7 @@ gyro_range = {
 }
 
 CAL_SIZE = 1000
+ACCEL_CAL_DIR = './accel_cal.txt'
 
 def accel_fit(x_input, m_x, b):
     return (m_x*x_input)+b
@@ -130,8 +132,18 @@ def main():
         option = input()
         if option == 'A': acceleration_loop()
         elif option == 'B': 
-            accel_cal = acceleration_calibration()
-            print(accel_cal)
+            print('Option A - get new calibration offsets')
+            print('Option B - use current calibration offsets')
+            option = input()
+            if option == 'A':
+                accel_cal = acceleration_calibration()
+                print(accel_cal)
+            elif option == 'B':
+                if path.exists(ACCEL_CAL_DIR):
+                    with open(ACCEL_CAL_DIR, 'r') as file:
+                        lines = file.readlines()
+                        accel_cal = [np.array([float(value) for value in line.replace('\n','').split(',')]) for line in lines]
+                    
         elif option == 'C':
             print('Option A - set acceleration range')
             option = input()
