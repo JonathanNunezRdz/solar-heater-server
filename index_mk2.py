@@ -1,51 +1,23 @@
 #!/usr/bin/python
-"""
-    TO-DO: 
-        - change acceleration range
-"""
 
 import RPi.GPIO as GPIO
-import smbus
 import math
 from flask import Flask, jsonify, make_response, request
 import sys
 import signal
 from time import sleep, time
+from os import path
+from mpu6050 import mpu6050
+import numpy as np
+from scipy.optimize import curve_fit
 
+MPU_ADDRESS = 0x68 # This is the MPU_ADDRESS value read via the i2cdetect command
+CAL_SIZE = 1000 # Total number of samples to make calibration
+ACCEL_CAL_DIR = './accel_cal.txt'
+
+sensor = mpu6050(MPU_ADDRESS)
 
 app = Flask(__name__)
-
-# Power management registers
-POWER_MGMT_1 = 0x6b
-POWER_MGMT_2 = 0x6c
-
-# Accel config MPU_ADDRESS
-ACCEL_CONFIG = 0x1C
-
-# Acceleration ranges
-ACCEL_RANGE_2G = 0x00
-ACCEL_RANGE_4G = 0x08
-ACCEL_RANGE_8G = 0x10
-ACCEL_RANGE_16G = 0x18
-
-bus = smbus.SMBus(1) # or bus = smbus.SMBus(1) for revision 2 boards
-MPU_ADDRESS = 0x68 # This is the MPU_ADDRESS value read via the i2cdetect command
-
-def read_byte(adr):
-    return bus.read_byte_data(MPU_ADDRESS, adr)
-
-def read_word(adr):
-    high = bus.read_byte_data(MPU_ADDRESS, adr)
-    low = bus.read_byte_data(MPU_ADDRESS, adr+1)
-    val = (high << 8) + low
-    return val
-
-def read_word_2c(adr):
-    val = read_word(adr)
-    if (val >= 0x8000):
-        return -((65535 - val) + 1)
-    else:
-        return val
 
 def dist(a,b):
     return math.sqrt((a*a) + (b*b))
@@ -120,50 +92,87 @@ def toggle_on_off(duration:float, inverse:bool=False):
 
     return None
 
-def get_acceleration():
-    accel_xout = read_word_2c(0x3b)
-    accel_yout = read_word_2c(0x3d)
-    accel_zout = read_word_2c(0x3f)
+def accel_fit(x_input, m_x, b)->float:
+    return (m_x * x_input) + b
 
-    accel_xout_scaled = accel_xout / 16384.0
-    accel_yout_scaled = accel_yout / 16384.0
-    accel_zout_scaled = accel_zout / 16384.0
+def get_accel()->tuple[float, float, float]:
+    data = sensor.get_accel_data(True)
+    return data['x'], data['y'], data['z']
 
-    return {
-        'x': round(accel_xout_scaled, 2),
-        'y': round(accel_yout_scaled, 2), 
-        'z': round(accel_zout_scaled, 2)
-    }
+def acceleration_calibration():
+    print('-'*50)
+    print('Accelerometer Calibration')
+    #  mpu_offsets = [[x], [y], [z]]
+    mpu_offsets = [[], [], []]
+    axis_vec = ['z', 'y', 'x']
+    cal_directions = ['upward', 'downward', 'perpendicular to gravity']
+    cal_index = [2, 1, 0]
+    for qq,ax_qq in enumerate(axis_vec):
+        ax_offsets = [[], [], []]
+        print('-'*50)
+        for direc_ii,direc in enumerate(cal_directions):
+            print('-'*8, 'Press Enter and keep MPU steady to calibrate the accelerometer with the -', ax_qq, 'axis pointed', direc)
+            input()
+            [get_accel() for ii in range(CAL_SIZE)]
+            mpu_array = []
+            while len(mpu_array) < CAL_SIZE:
+                try:
+                    ax,ay,az = get_accel()
+                    mpu_array.append([ax, ay, az])
+                except: continue
+            ax_offsets[direc_ii] = np.array(mpu_array)[:, cal_index[qq]]
+        
+        popts,_ = curve_fit(
+                    accel_fit,
+                    np.append(
+                        np.append(
+                            ax_offsets[0],
+                            ax_offsets[1]
+                        ),
+                        ax_offsets[2]
+                    ),
+                    np.append(
+                        np.append(
+                            1.0*np.ones(
+                                np.shape(ax_offsets[0])
+                            ),
+                            -1.0*np.ones(
+                                np.shape(ax_offsets[1])
+                            )
+                        ),
+                        0.0*np.ones(
+                            np.shape(ax_offsets[2])
+                        )
+                    ),
+                    maxfev=10000
+                )
+        #  mpu_offsets = [[x], [y], [z]]
+        mpu_offsets[cal_index[qq]] = popts
+    print('Accelerometer Calibration')
+    return mpu_offsets
 
 def mpu_average():
+    global accel_cal
     avg_xout = 0
     avg_yout = 0
     avg_zout = 0
 
     for i in range(10):
-        accel_xout = read_word_2c(0x3b)
-        accel_yout = read_word_2c(0x3d)
-        accel_zout = read_word_2c(0x3f)
-        
-        accel_xout_scaled = accel_xout / 16384.0
-        accel_yout_scaled = accel_yout / 16384.0
-        accel_zout_scaled = accel_zout / 16384.0
+        ax, ay, az = get_accel()
+        if accel_cal is not None:
+            ax = accel_fit(ax, *accel_cal[0])
+            ay = accel_fit(ay, *accel_cal[1])
+            az = accel_fit(az, *accel_cal[2])
 
-        avg_xout += accel_xout_scaled
-        avg_yout += accel_yout_scaled
-        avg_zout += accel_zout_scaled
+        avg_xout += ax
+        avg_yout += ay
+        avg_zout += az
 
     avg_xout = avg_xout / 10.0
     avg_yout = avg_yout / 10.0
     avg_zout = avg_zout / 10.0
-    
 
-    data = {
-        'x_rotation' : get_x_rotation(avg_xout, avg_yout, avg_zout),
-        'y_rotation' : get_y_rotation(avg_xout, avg_yout, avg_zout)
-    }
-
-    return data
+    return avg_xout, avg_yout, avg_zout
 
 def config_response(data, status=200):
     response = make_response(jsonify(data), status)
@@ -172,19 +181,16 @@ def config_response(data, status=200):
 
     return response
 
-def main():
-    bus.write_byte_data(MPU_ADDRESS, POWER_MGMT_1, 0)
-    # print(bus.read_byte_data(MPU_ADDRESS, ACCEL_CONFIG))
-    while(True):
-        sleep(0.1)
-        print(get_acceleration())
-
 @app.route('/')
 def index():
-    global CHANNEL_MOTOR_ENABLE, current_direction, motor_status
+    global CHANNEL_MOTOR_ENABLE, current_direction, motor_status, accel_cal
 
-    # Now wake the 6050 up as it starts in sleep mode
-    bus.write_byte_data(MPU_ADDRESS, POWER_MGMT_1, 0)
+    # Get calibration offsets from ./accel_cal.txt
+    accel_cal = None
+    if path.exists(ACCEL_CAL_DIR):
+        with open(ACCEL_CAL_DIR, 'r') as file:
+            lines = file.readlines()
+            accel_cal = [np.array([float(value) for value in line.replace('\n','').split(',')]) for line in lines]
 
     # Setup GPIO to use channel 25 as OUT
     CHANNEL_MOTOR_ENABLE = 25
@@ -207,34 +213,11 @@ def index():
 
 @app.route('/mpu')
 def mpu():
-    avg_xout = 0
-    avg_yout = 0
-    avg_zout = 0
-
-    for i in range(10):
-        accel_xout = read_word_2c(0x3b)
-        accel_yout = read_word_2c(0x3d)
-        accel_zout = read_word_2c(0x3f)
-        
-        accel_xout_scaled = accel_xout / 16384.0
-        accel_yout_scaled = accel_yout / 16384.0
-        accel_zout_scaled = accel_zout / 16384.0
-
-        avg_xout += accel_xout_scaled
-        avg_yout += accel_yout_scaled
-        avg_zout += accel_zout_scaled
-
-    avg_xout = avg_xout / 10.0
-    avg_yout = avg_yout / 10.0
-    avg_zout = avg_zout / 10.0
-    
+    avg_xout, avg_yout, avg_zout = mpu_average()
 
     data = {
-        # 'x_rotation' : get_x_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled),
-        # 'y_rotation' : get_y_rotation(accel_xout_scaled, accel_yout_scaled, accel_zout_scaled)
         'x_rotation' : get_x_rotation(avg_xout, avg_yout, avg_zout),
         'y_rotation' : get_y_rotation(avg_xout, avg_yout, avg_zout)
-        
     }
 
     response = config_response(data)
@@ -351,9 +334,9 @@ def get_averages():
     averages = []
 
     while lapsed_time < 80:
-        sleep(1)
         averages.append(mpu_average())
         lapsed_time = time() - start_time
+        sleep(1)
 
     pin_off(CHANNEL_MOTOR_ENABLE, 1)
     motor_status = 0
@@ -370,7 +353,6 @@ def get_averages():
 if __name__ == "__main__":
     print("running from main")
     signal.signal(signal.SIGINT, on_exit)
-    main()
 else:
     print('running from flask')
     signal.signal(signal.SIGINT, on_exit)

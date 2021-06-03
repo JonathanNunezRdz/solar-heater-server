@@ -2,7 +2,6 @@ from time import sleep, time
 from os import path
 from mpu6050 import mpu6050
 import threading as th
-import csv
 import numpy as np
 from scipy.optimize import curve_fit
 
@@ -16,13 +15,6 @@ accel_range = {
     '4': sensor.ACCEL_RANGE_4G,
     '8': sensor.ACCEL_RANGE_8G,
     '16': sensor.ACCEL_RANGE_16G,
-}
-
-gyro_range = {
-    '250': sensor.GYRO_RANGE_250DEG,
-    '500': sensor.GYRO_RANGE_500DEG,
-    '1000': sensor.GYRO_RANGE_1000DEG,
-    '2000': sensor.GYRO_RANGE_2000DEG,
 }
 
 CAL_SIZE = 1000
