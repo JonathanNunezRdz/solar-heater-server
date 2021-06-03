@@ -24,14 +24,19 @@ gyro_range = {
     '2000': sensor.GYRO_RANGE_2000DEG,
 }
 
-CAL_SIZE = 100
+CAL_SIZE = 1000
 
 def accel_fit(x_input, m_x, b):
     return (m_x*x_input)+b
 
+def get_accel():
+    data = sensor.get_accel_data(True)
+    return data['x'], data['y'], data['z']
+
 def acceleration_calibration():
     print('-'*50)
     print('Accelerometer Calibration')
+    #  mpu_offsets = [[x], [y], [z]]
     mpu_offsets = [[], [], []]
     axis_vec = ['z', 'y', 'x']
     cal_directions = ['upward', 'downward', 'perpendicular to gravity']
@@ -42,12 +47,11 @@ def acceleration_calibration():
         for direc_ii,direc in enumerate(cal_directions):
             print('-'*8, 'Press Enter and keep MPU steady to calibrate the accelerometer with the -', ax_qq, 'axis pointed', direc)
             input()
-            [sensor.get_accel_data(True) for ii in range(CAL_SIZE)]
+            [get_accel() for ii in range(CAL_SIZE)]
             mpu_array = []
             while len(mpu_array) < CAL_SIZE:
                 try:
-                    data = sensor.get_accel_data(True)
-                    ax, ay, az = data['x'], data['y'], data['z']
+                    ax,ay,az = get_accel()
                     mpu_array.append([ax, ay, az])
                 except: continue
             ax_offsets[direc_ii] = np.array(mpu_array)[:, cal_index[qq]]
@@ -76,10 +80,17 @@ def acceleration_calibration():
                     ),
                     maxfev=10000
                 )
-        
+        #  mpu_offsets = [[x], [y], [z]]
         mpu_offsets[cal_index[qq]] = popts
     print('Accelerometer Calibration')
     return mpu_offsets
+
+def get_accel_dict(x, y, z):
+    return { 
+        'x': x, 
+        'y': y, 
+        'z': z
+    }
 
 def key_capture_thread():
     global keep_going
@@ -87,18 +98,19 @@ def key_capture_thread():
     keep_going = False
 
 def acceleration_loop():
-    global keep_going
+    global keep_going, accel_cal
     print('accel range', sensor.read_accel_range())
 
     th.Thread(target=key_capture_thread, args=(), name='key_capture_thread', daemon=True).start()
     
     while keep_going:
+        ax, ay, az = get_accel()
+        if accel_cal is not None: 
+            ax = accel_fit(ax, *accel_cal[0])
+            ay = accel_fit(ay, *accel_cal[1])
+            az = accel_fit(az, *accel_cal[2])
+        print(get_accel_dict(ax, ay, az))
         sleep(0.1)
-        data = sensor.get_accel_data(True)
-        data['x'] = round(data['x'], 2)
-        data['y'] = round(data['y'], 2)
-        data['z'] = round(data['z'], 2)
-        print(data)
 
     return None
 
@@ -107,7 +119,7 @@ def set_acceleration(range='2'):
     sensor.set_accel_range(accel_range[range])
 
 def main():
-    global keep_going
+    global keep_going, accel_cal
     loop = True
     while(loop):
         keep_going = True
