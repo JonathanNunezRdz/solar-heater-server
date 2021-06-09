@@ -4,6 +4,10 @@ from flask import Flask, jsonify, make_response, request, Response
 import signal
 from time import sleep, time
 from mpu6050 import mpu6050
+from rotation_functions import get_x_rotation, get_y_rotation
+from gpio_functions import setup_gpio, on_exit
+from acceleration_functions import get_accel_dict, get_cal, mpu_average
+from motor_functions import toggle_on_off, set_motor_down, set_motor_up, setup_motor
 
 MPU_ADDRESS = 0x68 # This is the MPU_ADDRESS value read via the i2cdetect command
 CAL_SIZE = 1000 # Total number of samples to make calibration
@@ -14,12 +18,6 @@ CHANNEL_MOTOR_IN_2 = 24
 
 sensor = mpu6050(MPU_ADDRESS)
 app = Flask(__name__)
-
-from rotation_functions import get_x_rotation, get_y_rotation
-from gpio_functions import setup_gpio, on_exit
-from acceleration_functions import get_accel_dict, get_cal, mpu_average
-from motor_functions import toggle_on_off, set_motor_down, set_motor_up, setup_motor
-
 
 def config_response(data:dict, status:int=200)->Response:
     response = make_response(jsonify(data), status)
@@ -61,7 +59,7 @@ def index():
 @app.route('/mpu')
 def mpu():
     global accel_cal
-    avg_xout, avg_yout, avg_zout = mpu_average(accel_cal)
+    avg_xout, avg_yout, avg_zout = mpu_average(accel_cal, sensor)
 
     data = {
         'x_rotation' : get_x_rotation(avg_xout, avg_yout, avg_zout),
@@ -187,7 +185,7 @@ def get_averages():
     averages = []
 
     while lapsed_time < 80:
-        averages.append(get_accel_dict(*mpu_average(accel_cal)))
+        averages.append(get_accel_dict(*mpu_average(accel_cal, sensor)))
         lapsed_time = time() - start_time
         sleep(1)
 
