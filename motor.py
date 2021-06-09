@@ -14,7 +14,7 @@ GPIO.setup(en, GPIO.OUT)
 GPIO.output(in1, GPIO.HIGH)
 GPIO.output(in2, GPIO.LOW)
 
-motor = GPIO.PWM(en, 50)
+motor = GPIO.PWM(en, 400)
 motor_duty_cycle = 25
 
 def forward():
@@ -39,6 +39,7 @@ while(True):
     if x=='r':
         print("run")
         motor.start(motor_duty_cycle)
+        print(motor_duty_cycle)
         x='z'
 
 
@@ -74,6 +75,13 @@ while(True):
         motor.stop()
         motor.ChangeDutyCycle(75)
         motor_duty_cycle = 75
+        x='z'
+
+    elif x=='xh':
+        print("high")
+        motor.stop()
+        motor.ChangeDutyCycle(100)
+        motor_duty_cycle = 100
         x='z'
      
     
