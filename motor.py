@@ -11,11 +11,23 @@ GPIO.setup(in1, GPIO.OUT)
 GPIO.setup(in2, GPIO.OUT)
 GPIO.setup(en, GPIO.OUT)
 
-GPIO.output(in1, GPIO.LOW)
+GPIO.output(in1, GPIO.HIGH)
 GPIO.output(in2, GPIO.LOW)
 
 motor = GPIO.PWM(en, 1000)
-motor.start(25)    
+motor_duty_cycle = 25
+
+def forward():
+    motor.stop()
+    GPIO.output(in1,GPIO.HIGH)
+    GPIO.output(in2,GPIO.LOW)
+    print('forward')
+
+def backward():
+    motor.stop()
+    GPIO.output(in1,GPIO.LOW)
+    GPIO.output(in2,GPIO.HIGH)
+    print('backwards')
 
 while(True):
     print("\n")
@@ -26,55 +38,47 @@ while(True):
     
     if x=='r':
         print("run")
-        if(temp1==1):
-         GPIO.output(in1,GPIO.HIGH)
-         GPIO.output(in2,GPIO.LOW)
-         print("forward")
-         x='z'
-        else:
-         GPIO.output(in1,GPIO.LOW)
-         GPIO.output(in2,GPIO.HIGH)
-         print("backward")
-         x='z'
+        motor.start(motor_duty_cycle)
+        x='z'
 
 
     elif x=='s':
         print("stop")
-        GPIO.output(in1,GPIO.LOW)
-        GPIO.output(in2,GPIO.LOW)
+        motor.stop()
         x='z'
 
     elif x=='f':
-        print("forward")
-        GPIO.output(in1,GPIO.HIGH)
-        GPIO.output(in2,GPIO.LOW)
-        temp1=1
+        forward()
         x='z'
 
     elif x=='b':
-        print("backward")
-        GPIO.output(in1,GPIO.LOW)
-        GPIO.output(in2,GPIO.HIGH)
-        temp1=0
+        backward()
         x='z'
 
     elif x=='l':
         print("low")
+        motor.stop()
         motor.ChangeDutyCycle(25)
+        motor_duty_cycle = 25
         x='z'
 
     elif x=='m':
         print("medium")
+        motor.stop()
         motor.ChangeDutyCycle(50)
+        motor_duty_cycle = 50
         x='z'
 
     elif x=='h':
         print("high")
+        motor.stop()
         motor.ChangeDutyCycle(75)
+        motor_duty_cycle = 75
         x='z'
      
     
     elif x=='e':
+        motor.stop()
         GPIO.cleanup()
         break
     
