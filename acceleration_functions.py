@@ -1,9 +1,8 @@
 import numpy as np
-from os import path
 from scipy.optimize import curve_fit
 from index_mk2 import CAL_SIZE, ACCEL_CAL_DIR
 
-def get_accel_dict(ax:float, ay:float, az:float)->dict[str, float]:
+def get_accel_dict(ax:float, ay:float, az:float):
     return {
         'ax': ax,        
         'ay': ay,
