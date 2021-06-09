@@ -14,7 +14,7 @@ GPIO.setup(en, GPIO.OUT)
 GPIO.output(in1, GPIO.HIGH)
 GPIO.output(in2, GPIO.LOW)
 
-motor = GPIO.PWM(en, 1000)
+motor = GPIO.PWM(en, 50)
 motor_duty_cycle = 25
 
 def forward():
