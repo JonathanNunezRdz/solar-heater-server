@@ -9,12 +9,12 @@ def get_accel_dict(ax:float, ay:float, az:float):
         'az': az,
     }
 
-def get_cal()->list[np.ndarray]:
+def get_cal():
     with open(ACCEL_CAL_DIR, 'r') as file:
         lines = file.readlines()
         return [np.array([float(value) for value in line.replace('\n','').split(',')]) for line in lines]
 
-def mpu_average(accel_cal:list[np.ndarray], sensor)->tuple[float, float, float]:
+def mpu_average(accel_cal:list, sensor):
     avg_xout = 0
     avg_yout = 0
     avg_zout = 0
@@ -40,7 +40,7 @@ def mpu_average(accel_cal:list[np.ndarray], sensor)->tuple[float, float, float]:
 def accel_fit(x_input, m_x, b)->float:
     return (m_x*x_input) + b
 
-def get_accel(sensor)->tuple[float, float, float]:
+def get_accel(sensor):
     data = sensor.get_accel_data(True)
     return data['x'], data['y'], data['z']
 
