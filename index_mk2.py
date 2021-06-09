@@ -6,22 +6,20 @@ from time import sleep, time
 from mpu6050 import mpu6050
 
 MPU_ADDRESS = 0x68 # This is the MPU_ADDRESS value read via the i2cdetect command
-sensor = mpu6050(MPU_ADDRESS)
-
-from rotation_functions import get_x_rotation, get_y_rotation
-from gpio_functions import setup_gpio, on_exit
-from acceleration_functions import get_accel_dict, get_cal, mpu_average
-from motor_functions import toggle_on_off, set_motor_down, set_motor_up, setup_motor
-
-
 CAL_SIZE = 1000 # Total number of samples to make calibration
 ACCEL_CAL_DIR = './accel_cal.txt'
 CHANNEL_MOTOR_ENABLE = 25
 CHANNEL_MOTOR_IN_1 = 23
 CHANNEL_MOTOR_IN_2 = 24
 
-
+sensor = mpu6050(MPU_ADDRESS)
 app = Flask(__name__)
+
+from rotation_functions import get_x_rotation, get_y_rotation
+from gpio_functions import setup_gpio, on_exit
+from acceleration_functions import get_accel_dict, get_cal, mpu_average
+from motor_functions import toggle_on_off, set_motor_down, set_motor_up, setup_motor
+
 
 def config_response(data:dict, status:int=200)->Response:
     response = make_response(jsonify(data), status)
