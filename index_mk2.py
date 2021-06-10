@@ -6,6 +6,7 @@ ACCEL_CAL_DIR = './accel_cal.txt'
 CHANNEL_MOTOR_ENABLE = 25
 CHANNEL_MOTOR_IN_1 = 23
 CHANNEL_MOTOR_IN_2 = 24
+MOTOR_DUTY_CYCLE = 100
 
 from flask import Flask, jsonify, make_response, request, Response
 import signal
@@ -27,12 +28,9 @@ def config_response(data:dict, status:int=200)->Response:
 
 @app.route('/')
 def index():
-    global accel_cal, motor_duty_cycle, current_direction, motor_status, motor
+    global accel_cal, current_direction, motor_status, motor
     # Get calibration offsets
     accel_cal = get_cal()
-    
-    # initialize duty cycle for L298N - PWM
-    motor_duty_cycle = 25
 
     # initialize direction to upwards
     current_direction = 'up'
@@ -70,7 +68,7 @@ def mpu():
 
 @app.route('/toggle_motor')
 def toggle_motor():
-    global motor_status, motor, motor_duty_cycle
+    global motor_status, motor
 
     if motor_status == 1:
         data = {
@@ -80,7 +78,7 @@ def toggle_motor():
         return response
 
     duration = request.args.get('duration')
-    toggle_on_off(motor, motor_duty_cycle, float(duration), True)
+    toggle_on_off(motor, float(duration), True)
 
     data = {
         'status': 1,
@@ -92,7 +90,7 @@ def toggle_motor():
 
 @app.route('/motor_on')
 def motor_on():
-    global motor_status, motor, motor_duty_cycle, current_direction
+    global motor_status, motor, current_direction
 
     if motor_status == 1:
         data = {
@@ -102,7 +100,7 @@ def motor_on():
         response = config_response(data, 409)
         return response
 
-    motor.start(motor_duty_cycle)
+    motor.start(MOTOR_DUTY_CYCLE)
     motor_status = 1
 
     data = {
@@ -169,7 +167,7 @@ def change_direction():
 
 @app.route('/get_averages')
 def get_averages():
-    global CHANNEL_MOTOR_ENABLE, motor_status, motor, motor_duty_cycle, accel_cal
+    global motor_status, motor, accel_cal
     if motor_status == 1:
         data = {
             'message': "Can't get averages when motor is on"
@@ -177,7 +175,7 @@ def get_averages():
         response = config_response(data, 409)
         return response
     
-    motor.start(motor_duty_cycle)
+    motor.start(MOTOR_DUTY_CYCLE)
     motor_status = 1
 
     start_time = time()

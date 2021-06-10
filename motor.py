@@ -1,15 +1,19 @@
 import RPi.GPIO as GPIO
 from time import sleep
+"""
+    TO-DO: 
+        [] This script controls the motor, add to index_mk2.py
+"""
 
 in1 = 24
 in2 = 23
 en = 25
 temp1 = 1
 
-GPIO.setmode(GPIO.BCM)
-GPIO.setup(in1, GPIO.OUT)
-GPIO.setup(in2, GPIO.OUT)
-GPIO.setup(en, GPIO.OUT)
+# GPIO.setmode(GPIO.BCM)
+# GPIO.setup(in1, GPIO.OUT)
+# GPIO.setup(in2, GPIO.OUT)
+# GPIO.setup(en, GPIO.OUT)
 
 GPIO.output(in1, GPIO.HIGH)
 GPIO.output(in2, GPIO.LOW)
