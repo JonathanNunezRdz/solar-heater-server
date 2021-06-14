@@ -1,22 +1,28 @@
 {
-  "name": "solar-heater-server",
-  "version": "1.0.0",
-  "description": "* [x] Configurar entradas y salidas en raspberry pi http://192.168.0.116:5000\r * [x] Llamar a http://192.168.0.116:5000/current_direction para saber direccion del motor (1 o 0)\r * [x] Prender motor hasta que llegue al final con http://192.168.0.116:5000/motor_on\r * [x] Apagar motor con http://192.168.0.116:5000/motor_off\r * [x] Cambiar de direccion con http://192.168.0.116:5000/change_direction\r * [x] Prender nuevamente motor hasta que llegue al final con http://192.168.0.116:5000/motor_on\r * [x] Apagar motor con http://192.168.0.116:5000/motor_off",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/JonathanNunezRdz/solar-heater-server.git"
-  },
-  "author": "Jonathan Andre Nunez Rodriguez",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/JonathanNunezRdz/solar-heater-server/issues"
-  },
-  "homepage": "https://github.com/JonathanNunezRdz/solar-heater-server#readme",
-  "dependencies": {
-    "express": "^4.17.1"
-  }
+	"name": "solar-heater-server",
+	"version": "1.0.0",
+	"description": "* [x] Configurar entradas y salidas en raspberry pi http://192.168.0.116:5000\r * [x] Llamar a http://192.168.0.116:5000/current_direction para saber direccion del motor (1 o 0)\r * [x] Prender motor hasta que llegue al final con http://192.168.0.116:5000/motor_on\r * [x] Apagar motor con http://192.168.0.116:5000/motor_off\r * [x] Cambiar de direccion con http://192.168.0.116:5000/change_direction\r * [x] Prender nuevamente motor hasta que llegue al final con http://192.168.0.116:5000/motor_on\r * [x] Apagar motor con http://192.168.0.116:5000/motor_off",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"server": "nodemon index.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/JonathanNunezRdz/solar-heater-server.git"
+	},
+	"author": "Jonathan Andre Nunez Rodriguez",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/JonathanNunezRdz/solar-heater-server/issues"
+	},
+	"homepage": "https://github.com/JonathanNunezRdz/solar-heater-server#readme",
+	"dependencies": {
+		"body-parser": "^1.19.0",
+		"cors": "^2.8.5",
+		"express": "^4.17.1",
+		"mongoose": "^5.12.13",
+		"morgan": "^1.10.0",
+		"nodemon": "^2.0.7"
+	}
 }
