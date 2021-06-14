@@ -18,11 +18,14 @@
 	},
 	"homepage": "https://github.com/JonathanNunezRdz/solar-heater-server#readme",
 	"dependencies": {
+		"@ros2jsguy/mpu6050-motion-data": "^0.1.1",
 		"body-parser": "^1.19.0",
+		"chalk": "^3.0.0",
 		"cors": "^2.8.5",
 		"express": "^4.17.1",
 		"mongoose": "^5.12.13",
 		"morgan": "^1.10.0",
-		"nodemon": "^2.0.7"
+		"nodemon": "^2.0.7",
+		"pigpio": "^3.3.1"
 	}
 }

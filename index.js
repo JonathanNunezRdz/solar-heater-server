@@ -4,6 +4,7 @@ const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const { mongoURI } = require('./config/keys');
+const { log, success } = require('./utils');
 
 // import mongoDB models
 require('./models');
@@ -48,7 +49,7 @@ const connect = async () => {
 			useUnifiedTopology: true,
 		});
 		app.listen(PORT, () =>
-			console.log(`solar=heater-server running on port: ${PORT}`)
+			log(success(`solar-heater-server running on port: ${PORT}`))
 		);
 	} catch (error) {
 		console.error(error);
